@@ -1,0 +1,141 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ListApp
+{
+    internal class Program
+    {
+        static List<string> taskList = new List<string>();
+        static List<string> taskDesp = new List<string>();
+
+        static void Main(string[] args)
+        {
+            Console.WriteLine(".......Simple Task List Application.......");
+            Console.WriteLine("-------------------------------------------");
+            Console.WriteLine();
+
+            DateTime localDate = DateTime.Now;
+            DateTime currentdate =localDate.Date;
+            DayOfWeek currentDayOfWeek = DateTime.Now.DayOfWeek;
+
+            Console.WriteLine("Today" + "-" + currentdate + "-" + currentDayOfWeek);
+            Console.WriteLine();
+
+            bool exit = false;
+            while (!exit)
+            {
+                Console.WriteLine("What would you like to do?");
+                Console.WriteLine("1. Create a task");
+                Console.WriteLine("2. Read tasks");
+                Console.WriteLine("3. Update a task");
+                Console.WriteLine("4. Delete a task");
+                Console.WriteLine("5. Exit");
+                Console.Write("Enter your choice: ");
+                int choice = Convert.ToInt32(Console.ReadLine());
+
+                switch (choice)
+                {
+                    case 1:
+                        CreateTask();
+                        break;
+                    case 2:
+                        ReadTask();
+                        break;
+                    case 3:
+                        UpdateTask();
+                        break;
+                    case 4:
+                        DeleteTask();
+                        break;
+                    case 5:
+                        exit = true;
+                        break;
+                    default:
+                        Console.WriteLine("Invalid choice.Please Enter a valid choice");
+                        break;
+                }
+            }
+        }
+        static void CreateTask()
+        {
+            Console.Write("Enter the title to add to the list: ");
+            String title = Console.ReadLine();
+            Console.Write("Please Enter the description for the title you were added: ");
+            String description = Console.ReadLine();
+            taskList.Add(title);
+            taskDesp.Add(description);
+            Console.WriteLine("Task added to the list Succesfully");
+        }
+
+        static void ReadTask()
+        {
+            Console.WriteLine("Display the list of task currently available in the list: ");
+            if(taskList.Count == 0)
+            {
+                Console.WriteLine("No tasks available in the list");
+            }
+            else
+            {
+                for (int i = 0; i < taskList.Count; i++)
+                {
+                    Console.WriteLine($"{i + 1}. {taskList[i]} - {taskDesp[i]}");
+                }
+            }
+
+        }
+
+        static void UpdateTask()
+        {
+            if(taskList.Count == 0)
+            {
+                Console.WriteLine("No available tasks to update in the list");
+                return;
+            }
+
+            Console.Write("Please enter the value you want to update: ");
+            int index = Convert.ToInt32(Console.ReadLine()) - 1;
+
+            if(index < 0 || index >= taskList.Count)
+            {
+                Console.WriteLine("Invalid index value");
+                return;
+            }
+            Console.Write("Enter the title you want to update to the list: ");
+            String newtitle = Console.ReadLine();
+            Console.Write("Enter the description for the updated title: ");
+            String newdesp = Console.ReadLine();
+            taskList[index] = newtitle;
+            taskDesp[index] = newdesp;
+            Console.WriteLine("Task updated Successfully in the list");
+
+        }
+
+        static void DeleteTask()
+        {
+            if (taskList.Count == 0)
+            {
+                Console.WriteLine("No available tasks to delete in the list");
+                return;
+            }
+
+            Console.Write("Please enter the value you want to delete: ");
+            int index = Convert.ToInt32(Console.ReadLine()) - 1;
+
+            if (index < 0 || index >= taskList.Count)
+            {
+                Console.WriteLine("Invalid index value");
+                return;
+            }
+
+            taskList.RemoveAt(index);
+            taskDesp.RemoveAt(index);
+            Console.WriteLine("Task deleted Sucessfully");
+
+        }
+    }
+}
+           
+           
