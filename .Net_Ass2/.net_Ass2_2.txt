@@ -1,0 +1,79 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ConsoleApp1
+{
+    internal class Inventory
+    {
+        private List<Item> items = new List<Item>();
+
+        public void AddItem(Item item)
+        {
+            if (!items.Contains(item))
+            {
+                items.Add(item);
+                Console.WriteLine("Item added sucessfully");
+            }
+            else
+            {
+                Console.WriteLine("Item already exist");
+            }
+        }
+        public void DisplayAllItem()
+        {
+            if (items.Count == 0)
+            {
+                Console.WriteLine("No items available in the Inventory");
+                return;
+            }
+            for (int i=0;i<items.Count;i++)
+            {
+                Console.WriteLine($"ID: {items[i].ID}, Name: {items[i].Name}, Price: {items[i].Price}, Quantity: {items[i].Quantity}");
+            }
+        }
+        public Item FindItemByID(int id)
+        {
+            foreach (var item in items)
+            {
+                if (item.ID == id)
+                {
+                    return item;
+                }
+            }
+            return null;
+        }
+        public void UpdateItem(int id, string name, decimal price, int quantity)
+        {
+            Item item = FindItemByID(id);
+            if (item != null)
+            {
+                item.Name = name;
+                item.Price = price;
+                item.Quantity = quantity;
+                Console.WriteLine("Item updated successfully.");
+            }
+            else
+            {
+                Console.WriteLine("Item not found.");
+            }
+        }
+        public void DeleteItem(int id)
+        {
+            Item item = FindItemByID(id);
+            if (item != null)
+            {
+                items.Remove(item);
+                Console.WriteLine("Item deleted successfully.");
+            }
+            else
+            {
+                Console.WriteLine("Item not found.");
+            }
+        }
+    }
+   
+}
+
