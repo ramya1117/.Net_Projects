@@ -1,0 +1,116 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ConsoleApp1
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine("Inventory Management System");
+            Console.WriteLine("----------------------------");
+            Console.WriteLine();
+
+            Inventory inven = new Inventory();
+
+            bool exit = false;
+            while (!exit)
+            {
+                Console.WriteLine("What would you want to do?");
+                Console.WriteLine("1. Add a new item: ");
+                Console.WriteLine("2. Displaying all item in the Inventory: ");
+                Console.WriteLine("3. Finding an item by ID: ");
+                Console.WriteLine("4. Update an item: ");
+                Console.WriteLine("5. Deleting an item: ");
+                Console.WriteLine("6. Exit");
+
+                Console.Write("Pick one: ");
+                String pick = Console.ReadLine();
+
+                switch (pick)
+                {
+                    case "1":
+                        AddItem(inven);
+                        break;
+                    case "2":
+                        inven.DisplayAllItem();
+                        break;
+                    case "3":
+                        FindItemByID(inven);
+                        break;
+                    case "4":
+                        UpdateItem(inven);
+                        break;
+                    case "5":
+                        DeleteItem(inven);
+                        break;
+                    case "6":
+                        exit = true;
+                        return;
+                    default:
+                        Console.WriteLine("Invalid pick");
+                        break;
+
+                }
+                Console.WriteLine();
+
+            }
+        }
+        static void AddItem(Inventory inven)
+        {
+            Console.Write("Enter Item ID: ");
+            int id = int.Parse(Console.ReadLine());
+            Console.Write("Enter Item Name: ");
+            string name = Console.ReadLine();
+            Console.Write("Enter Item Price: ");
+            decimal price = decimal.Parse(Console.ReadLine());
+            Console.Write("Enter Item Quantity: ");
+            int quantity = int.Parse(Console.ReadLine());
+
+            Item item = new Item(id, name, price, quantity);
+            inven.AddItem(item);
+        }
+        static void FindItemByID(Inventory inven)
+        {
+            Console.Write("Enter Item ID: ");
+            int id = int.Parse(Console.ReadLine());
+            
+            Item item = inven.FindItemByID(id);
+
+            if (item != null)
+            {
+                Console.WriteLine(item);
+            }
+            else
+            {
+                Console.WriteLine("Item not found.");
+            }
+        }
+
+        static void UpdateItem(Inventory inven)
+        {
+            Console.Write("Enter Item ID: ");
+            int id = int.Parse(Console.ReadLine());
+            Console.Write("Enter New Item Name: ");
+            string name = Console.ReadLine();
+            Console.Write("Enter New Item Price: ");
+            decimal price = decimal.Parse(Console.ReadLine());
+            Console.Write("Enter New Item Quantity: ");
+            int quantity = int.Parse(Console.ReadLine());
+
+            inven.UpdateItem(id, name, price, quantity);
+        }
+
+        static void DeleteItem(Inventory inven)
+        {
+            Console.Write("Enter Item ID: ");
+            int id = int.Parse(Console.ReadLine());
+            inven.DeleteItem(id);
+        }
+    }
+
+}
+
