@@ -1,0 +1,148 @@
+using Library.DTO;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Cosmos;
+using System.ComponentModel;
+using Container = Microsoft.Azure.Cosmos.Container;
+using Library.Entity;
+
+
+namespace Library.Controllers
+{
+    public class MemberController
+    {
+        [Route("api/[controller]/[action]")]
+        [ApiController]
+        public class memberController : ControllerBase
+        {
+
+            public string URI = "https://localhost:8081";
+            public string PrimaryKey = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
+            public string DatabaseName = "Library";
+            public string ContainerName = "Container1";
+            public Container container;
+
+            private Container GetContainer()
+            {
+                CosmosClient cosmosClient = new CosmosClient(URI, PrimaryKey);
+                Database database = cosmosClient.GetDatabase(DatabaseName);
+                Container container = database.GetContainer(ContainerName);
+                return container;
+            }
+            public memberController()
+            {
+                container = GetContainer();
+            }
+
+            [HttpPost]
+            public async Task<Memberdto> AddMember(Memberdto memberdto)
+            {
+
+                Member member = new Member();
+                member.Name = memberdto.Name;
+                member.DateOfBirth = memberdto.DateOfBirth;
+                member.Email = memberdto.Email;
+
+                member.Id = Guid.NewGuid().ToString();
+                member.UId = member.Id;
+                member.DocumentType = "Members";
+                member.CreatedBy = "Ramya";
+                member.CreatedOn = DateTime.Now;
+                member.UpdatedBy = "";
+                member.UpdatedOn = DateTime.Now;
+                member.Version = 1;
+                member.Active = true;
+                member.Archived = false;
+
+                Member response = await container.CreateItemAsync(member);
+
+
+                Memberdto responsedto = new Memberdto();
+                responsedto.UId = response.UId;
+                responsedto.Name = response.Name;
+                responsedto.DateOfBirth = response.DateOfBirth;
+                responsedto.Email = response.Email;
+                return responsedto;
+            }
+
+            [HttpGet]
+
+            public async Task<Memberdto> GetMemberByUID(string UId)
+            {
+                var member = container.GetItemLinqQueryable<Member>(true).Where(q => q.UId == UId).FirstOrDefault();
+
+                if (member == null)
+                {
+                    return null;
+                }
+                Memberdto MemberDto = new Memberdto();
+
+                MemberDto.UId = member.UId;
+                MemberDto.Name = member.Name;
+                MemberDto.DateOfBirth = member.DateOfBirth;
+                MemberDto.Email = member.Email;
+
+                return MemberDto;
+            }
+            [HttpGet]
+            public async Task<List<Memberdto>> GetAllMember()
+            {
+                var members = container.GetItemLinqQueryable<Member>(true).Where(q => q.DocumentType == "Members").ToList();
+
+                List<Memberdto> Memberdtos = new List<Memberdto>();
+                foreach (var member in members)
+                {
+                    Memberdto memberdto = new Memberdto();
+                    memberdto.UId = member.UId;
+                    memberdto.Name = member.Name;
+                    memberdto.DateOfBirth = member.DateOfBirth;
+                    memberdto.Email = member.Email;
+
+                    Memberdtos.Add(memberdto);
+                }
+                return Memberdtos;
+            }
+
+            [HttpPost]
+
+
+            public async Task<Memberdto> UpdateMember(Memberdto member)
+            {
+
+                var existingMember = container.GetItemLinqQueryable<Member>(true).Where(q => q.UId == member.UId && q.Active == true && q.Archived == false).FirstOrDefault();
+
+
+                await container.ReplaceItemAsync(existingMember, existingMember.Id);
+
+
+
+                existingMember.Id = Guid.NewGuid().ToString();
+                existingMember.UpdatedBy = "Ramya";
+                existingMember.UpdatedOn = DateTime.Now;
+                existingMember.Version = existingMember.Version + 1;
+                existingMember.Active = true;
+                existingMember.Archived = false;
+
+
+                existingMember.Name = member.Name;
+                existingMember.DateOfBirth = member.DateOfBirth;
+                existingMember.Email = member.Email;
+
+
+
+                existingMember = await container.CreateItemAsync(existingMember);
+
+
+                Memberdto reponse = new Memberdto();
+                reponse.UId = existingMember.UId;
+                reponse.Name = existingMember.Name;
+                reponse.DateOfBirth = existingMember.DateOfBirth;
+                reponse.Email = existingMember.Email;
+
+                return reponse;
+
+            }
+
+        }
+    }
+}
+
