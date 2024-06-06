@@ -1,0 +1,208 @@
+using Microsoft.AspNetCore.Http;
+using System.ComponentModel;
+using Microsoft.Azure.Cosmos;
+using Microsoft.AspNetCore.Mvc;
+using Container = Microsoft.Azure.Cosmos.Container;
+using Library.Entity;
+using Library.DTO;
+
+
+namespace Library.Controllers
+{
+    public class BookController
+    {
+        [Route("api/[controller]/[action]")]
+        [ApiController]
+        public class bookController : ControllerBase
+        {
+
+            public string URI = "https://localhost:8081";
+            public string PrimaryKey = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
+            public string DatabaseName = "Library";
+            public string ContainerName = "Container1";
+            public Container container;
+
+
+            private Container GetContainer()
+            {
+                CosmosClient cosmosClient = new CosmosClient(URI, PrimaryKey);
+                Database database = cosmosClient.GetDatabase(DatabaseName);
+                Container container = database.GetContainer(ContainerName);
+                return container;
+            }
+            public bookController()
+            {
+                container = GetContainer();
+            }
+            [HttpPost]
+
+            public async Task<Bookdto> AddBook(Bookdto bookdto)
+            {
+                Book book = new Book();
+                book.Title = bookdto.Title;
+                book.Author = bookdto.Author;
+                book.PublishedDate = bookdto.PublishedDate;
+                book.ISBN = bookdto.ISBN;
+                book.IsIssued = bookdto.IsIssued;
+
+
+                book.Id = Guid.NewGuid().ToString();
+                book.UId = book.Id;
+                book.DocumentType = "Book";
+                book.CreatedBy = "Ramya";
+                book.CreatedOn = DateTime.Now;
+                book.UpdatedBy = "";
+                book.UpdatedOn = DateTime.Now;
+                book.Version = 1;
+                book.Active = true;
+                book.Archived = false;
+
+                Book response = await container.CreateItemAsync(book);
+
+
+                Bookdto responseDto = new Bookdto();
+                responseDto.UId = response.UId;
+                responseDto.Title = response.Title;
+                responseDto.Author = response.Author;
+                responseDto.PublishedDate = response.PublishedDate;
+                responseDto.ISBN = response.ISBN;
+                responseDto.IsIssued = response.IsIssued;
+                return responseDto;
+            }
+            [HttpGet]
+
+            public async Task<Bookdto> GetBookByUID(string UId)
+            {
+                var book = container.GetItemLinqQueryable<Book>(true).Where(q => q.UId == UId).FirstOrDefault();
+
+                Bookdto bookdto = new Bookdto();
+
+                bookdto.UId = book.UId;
+                bookdto.Title = book.Title;
+                bookdto.Author = book.Author;
+                bookdto.PublishedDate = book.PublishedDate;
+                bookdto.ISBN = book.ISBN;
+                bookdto.IsIssued = book.IsIssued;
+
+                return bookdto;
+            }
+            [HttpGet]
+            public async Task<Bookdto> GetBookByName(String Title)
+            {
+                var book = container.GetItemLinqQueryable<Bookdto>(true).Where(q => q.Title == Title).FirstOrDefault();
+
+                Bookdto bookdto = new Bookdto();
+                bookdto.UId = book.UId;
+                bookdto.Title = book.Title;
+                bookdto.Author = book.Author;
+                bookdto.PublishedDate = book.PublishedDate;
+                bookdto.ISBN = book.ISBN;
+                bookdto.IsIssued = book.IsIssued;
+                return bookdto;
+            }
+
+            [HttpGet]
+            public async Task<List<Bookdto>> GetAllBooks()
+            {
+                var books = container.GetItemLinqQueryable<Book>(true).Where(q => q.DocumentType == "Book").ToList();
+
+                List<Bookdto> bookdtos = new List<Bookdto>();
+                foreach (var book in books)
+                {
+                    Bookdto bookdto = new Bookdto();
+                    bookdto.UId = book.UId;
+                    bookdto.Title = book.Title;
+                    bookdto.Author = book.Author;
+                    bookdto.PublishedDate = book.PublishedDate;
+                    bookdto.ISBN = book.ISBN;
+                    bookdto.IsIssued = book.IsIssued;
+
+
+                    bookdtos.Add(bookdto);
+                }
+                return bookdtos;
+
+
+            }
+
+            [HttpGet]
+            public async Task<List<Bookdto>> GetAllNotIssuedBook()
+            {
+                var books = container.GetItemLinqQueryable<Book>(true).Where(q => q.IsIssued == false).ToList();
+
+                List<Bookdto> bookdtos = new List<Bookdto>();
+                foreach (var book in books)
+                {
+                    Bookdto bookDto = new Bookdto();
+                    bookDto.UId = book.UId;
+                    bookDto.Title = book.Title;
+                    bookDto.Author = book.Author;
+                    bookDto.PublishedDate = book.PublishedDate;
+                    bookDto.ISBN = book.ISBN;
+                    bookDto.IsIssued = book.IsIssued;
+
+                    bookdtos.Add(bookDto);
+                }
+                return bookdtos;
+
+            }
+            [HttpGet]
+            public async Task<List<Bookdto>> GetAllIssuedBook()
+            {
+                var books = container.GetItemLinqQueryable<Book>(true).Where(q => q.IsIssued == true).ToList();
+
+                List<Bookdto> bookdtos = new List<Bookdto>();
+                foreach (var book in books)
+                {
+                    Bookdto bookDto = new Bookdto();
+                    bookDto.UId = book.UId;
+                    bookDto.Title = book.Title;
+                    bookDto.Author = book.Author;
+                    bookDto.PublishedDate = book.PublishedDate;
+                    bookDto.ISBN = book.ISBN;
+                    bookDto.IsIssued = book.IsIssued;
+
+                    bookdtos.Add(bookDto);
+                }
+                return bookdtos;
+
+            }
+            [HttpPost]
+
+
+            public async Task<Bookdto> UpdateBook(Bookdto book)
+            {
+
+                var existingBook = container.GetItemLinqQueryable<Book>(true).Where(q => q.UId == book.UId && q.Active == true && q.Archived == false).FirstOrDefault();
+
+                await container.ReplaceItemAsync(existingBook, existingBook.Id);
+
+                existingBook.Id = Guid.NewGuid().ToString();
+                existingBook.UpdatedBy = "Ramya";
+                existingBook.UpdatedOn = DateTime.Now;
+                existingBook.Version = existingBook.Version + 1;
+                existingBook.Active = true;
+                existingBook.Archived = false;
+                existingBook.Title = book.Title;
+                existingBook.Author = book.Author;
+                existingBook.PublishedDate = book.PublishedDate;
+                existingBook.ISBN = book.ISBN;
+                existingBook.IsIssued = book.IsIssued;
+                existingBook = await container.CreateItemAsync(existingBook);
+
+
+                Bookdto reponse = new Bookdto();
+                reponse.UId = existingBook.UId;
+                reponse.Title = existingBook.Title;
+                reponse.Author = existingBook.Author;
+                reponse.PublishedDate = existingBook.PublishedDate;
+                reponse.ISBN = existingBook.ISBN;
+                reponse.IsIssued = existingBook.IsIssued;
+                return reponse;
+
+            }
+
+        }
+    }
+}
+
